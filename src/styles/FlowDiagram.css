@@ -1,0 +1,42 @@
+.step-container {
+    position: absolute;
+    text-align: center;
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .step-icon {
+    color: #2563eb; 
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .step-text {
+    color: black;
+    font-size: 1.125rem; 
+    font-weight: 500;
+    width: 200px; 
+    text-align: center;
+  }
+  
+  /* Positioning inside circles */
+  .step-left {
+    top: 55%;
+    left: 12%;
+    transform: translateY(-20%);
+  }
+  
+  .step-center {
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  .step-right {
+    top: 60%;
+    right: 14%;
+    transform: translateY(-50%);
+  }
+  

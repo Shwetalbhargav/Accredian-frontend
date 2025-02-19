@@ -1,210 +1,196 @@
-import React, { useState } from 'react';
-import  axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import { createReferral, fetchCourses } from '../services/api';
+import { FaUser, FaEnvelope, FaPhone, FaClipboardList } from 'react-icons/fa';
 
 const ReferralForm = () => {
   const [formData, setFormData] = useState({
-    studentId: '',
-    referrerId: '',
-    referredStudentId: '',
-    courseId: '',
-    preferredStartDate: '',
-    previousExperience: 'No',
-    specificExperience: '',
-    preferredLanguage: '',
-    specificRequirementsOrGoals: '',
-    consent: 'No',
-    referrerSignature: '',
-    referralDate: '',
-    referralReceivedBy: '',
-    followUpActionTaken: '',
-    comments: ''
+    referrer_name: '',
+    referrer_email: '',
+    referrer_phone: '',
+    referee_name: '',
+    referee_email: '',
+    referee_phone: '',
+    course_id: '',
+    referral_code: '',
+    consent: true,
   });
+
+  const [courses, setCourses] = useState([]);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        const data = await fetchCourses();
+        setCourses(data);
+      } catch (error) {
+        console.error('Failed to load courses:', error);
+      }
+    };
+    loadCourses();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: name === 'course_id' ? parseInt(value, 10) : value,
     });
   };
 
-  
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post('/api/referrals', formData);
-      console.log('Form data submitted:', response.data);
-    } catch (error) {
-      console.error('Error submitting form data:', error);
+    setError('');
+
+    if (!formData.course_id) {
+      setError('Please select a course.');
+      return;
     }
-    
+
+    try {
+      await createReferral(formData);
+      alert('Referral submitted successfully!');
+    } catch (error) {
+      setError('Error submitting referral. Please check the inputs.');
+    }
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-6">Referral Form</h2>
+    <div className="max-w-3xl mx-auto p-8 bg-white shadow-lg rounded-lg">
+      <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Referral Form</h2>
+
+      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+
       <form onSubmit={handleSubmit} className="space-y-6">
+        
+        {/* Referrer Details */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Student ID</label>
+          <div className="flex items-center border rounded-md p-2">
+            <FaUser className="text-gray-500 mr-2" />
             <input
-              type="number"
-              name="studentId"
-              value={formData.studentId}
+              type="text"
+              name="referrer_name"
+              placeholder="Referrer Name"
+              value={formData.referrer_name}
               onChange={handleChange}
               required
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full border-none focus:ring-0 focus:outline-none"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Referrer ID</label>
+          <div className="flex items-center border rounded-md p-2">
+            <FaEnvelope className="text-gray-500 mr-2" />
             <input
-              type="number"
-              name="referrerId"
-              value={formData.referrerId}
+              type="email"
+              name="referrer_email"
+              placeholder="Referrer Email"
+              value={formData.referrer_email}
               onChange={handleChange}
               required
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full border-none focus:ring-0 focus:outline-none"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Referred Student ID</label>
+          <div className="flex items-center border rounded-md p-2">
+            <FaPhone className="text-gray-500 mr-2" />
             <input
-              type="number"
-              name="referredStudentId"
-              value={formData.referredStudentId}
+              type="text"
+              name="referrer_phone"
+              placeholder="Referrer Phone"
+              value={formData.referrer_phone}
               onChange={handleChange}
               required
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full border-none focus:ring-0 focus:outline-none"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Course ID</label>
+        </div>
+
+        {/* Referee Details */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="flex items-center border rounded-md p-2">
+            <FaUser className="text-gray-500 mr-2" />
             <input
-              type="number"
-              name="courseId"
-              value={formData.courseId}
+              type="text"
+              name="referee_name"
+              placeholder="Referee Name"
+              value={formData.referee_name}
               onChange={handleChange}
               required
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full border-none focus:ring-0 focus:outline-none"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Preferred Start Date</label>
+          <div className="flex items-center border rounded-md p-2">
+            <FaEnvelope className="text-gray-500 mr-2" />
             <input
-              type="date"
-              name="preferredStartDate"
-              value={formData.preferredStartDate}
+              type="email"
+              name="referee_email"
+              placeholder="Referee Email"
+              value={formData.referee_email}
               onChange={handleChange}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              required
+              className="w-full border-none focus:ring-0 focus:outline-none"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Previous Experience</label>
+          <div className="flex items-center border rounded-md p-2">
+            <FaPhone className="text-gray-500 mr-2" />
+            <input
+              type="text"
+              name="referee_phone"
+              placeholder="Referee Phone"
+              value={formData.referee_phone}
+              onChange={handleChange}
+              required
+              className="w-full border-none focus:ring-0 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Course Selection */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="flex items-center border rounded-md p-2">
+            <FaClipboardList className="text-gray-500 mr-2" />
             <select
-              name="previousExperience"
-              value={formData.previousExperience}
+              name="course_id"
+              value={formData.course_id}
               onChange={handleChange}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              required
+              className="w-full border-none focus:ring-0 focus:outline-none"
             >
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
+              <option value="">Select a Course</option>
+              {courses.map(course => (
+                <option key={course.id} value={course.id}>
+                  {course.name} (Bonus: {course.referrer_bonus})
+                </option>
+              ))}
             </select>
           </div>
+          <div className="flex items-center border rounded-md p-2">
+            <FaClipboardList className="text-gray-500 mr-2" />
+            <input
+              type="text"
+              name="referral_code"
+              placeholder="Referral Code"
+              value={formData.referral_code}
+              onChange={handleChange}
+              required
+              className="w-full border-none focus:ring-0 focus:outline-none"
+            />
+          </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Specific Experience</label>
-          <textarea
-            name="specificExperience"
-            value={formData.specificExperience}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Preferred Language</label>
-          <input
-            type="text"
-            name="preferredLanguage"
-            value={formData.preferredLanguage}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Specific Requirements or Goals</label>
-          <textarea
-            name="specificRequirementsOrGoals"
-            value={formData.specificRequirementsOrGoals}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Consent</label>
-          <select
-            name="consent"
-            value={formData.consent}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Referrer Signature</label>
-          <input
-            type="text"
-            name="referrerSignature"
-            value={formData.referrerSignature}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Referral Date</label>
-          <input
-            type="date"
-            name="referralDate"
-            value={formData.referralDate}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Referral Received By</label>
-          <input
-            type="text"
-            name="referralReceivedBy"
-            value={formData.referralReceivedBy}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Follow Up Action Taken</label>
-          <textarea
-            name="followUpActionTaken"
-            value={formData.followUpActionTaken}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Comments</label>
-          <textarea
-            name="comments"
-            value={formData.comments}
-            onChange={handleChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-        <div className="text-right">
+
+        {/* Consent and Submit */}
+        <div className="flex items-center justify-between">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              name="consent"
+              checked={formData.consent}
+              onChange={() => setFormData({ ...formData, consent: !formData.consent })}
+              className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+            />
+            <span className="ml-2 text-gray-700">I give my consent</span>
+          </label>
           <button
             type="submit"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700 transition duration-200"
           >
             Submit
           </button>
@@ -215,6 +201,3 @@ const ReferralForm = () => {
 };
 
 export default ReferralForm;
-    
-      
-    
